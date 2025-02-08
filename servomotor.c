@@ -14,10 +14,12 @@ void setup_pwm() {
     pwm_set_enabled(slice_num, true); // Habilita o PWM
 }
 
+// Função para setar o duty cycle do PWM
 void set_pwm_duty_cycle(uint slice_num, uint16_t duty_cycle) {
     pwm_set_gpio_level(PWM_GPIO, duty_cycle);
 }
 
+// Função para mover o servo motor para 180 graus
 void move_servo_to_180_degrees() {
     uint slice_num = pwm_gpio_to_slice_num(PWM_GPIO);
     uint16_t duty_cycle = 2400; // 2.400µs
@@ -25,6 +27,7 @@ void move_servo_to_180_degrees() {
     sleep_ms(5000); // Aguarda 5 segundos
 }
 
+// Função para mover o servo motor para 90 graus
 void move_servo_to_90_degrees() {
     uint slice_num = pwm_gpio_to_slice_num(PWM_GPIO);
     uint16_t duty_cycle = 1470; // 1.470µs
@@ -32,6 +35,7 @@ void move_servo_to_90_degrees() {
     sleep_ms(5000); // Aguarda 5 segundos
 }
 
+// Função para mover o servo motor para 0 graus
 void move_servo_to_0_degrees() {
     uint slice_num = pwm_gpio_to_slice_num(PWM_GPIO);
     uint16_t duty_cycle = 500; // 500µs

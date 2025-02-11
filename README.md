@@ -2,6 +2,9 @@
 
 Este programa em C utiliza a biblioteca SDK do Raspberry Pi Pico para controlar um servo motor por meio de um sinal PWM gerado na GPIO 22. Ele movimenta o servo entre 0°, 90° e 180°, além de realizar um movimento contínuo de oscilação entre esses ângulos.
 
+## Vídeo 
+Link: https://drive.google.com/file/d/1cbQ_sOgeDbpDZEe54Uk3H0Fcn-cgXkq_/view?usp=sharing
+
 ## Requisitos
 
 - Raspberry Pi Pico W

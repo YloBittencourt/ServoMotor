@@ -1,59 +1,71 @@
-#include <stdio.h> //biblioteca padrão da linguagem C
-#include "pico/stdlib.h" //subconjunto central de bibliotecas do SDK Pico
-#include "hardware/pwm.h" //biblioteca para controlar o hardware de PWM
+#include "pico/stdlib.h"
+#include "hardware/pwm.h"
+#include <stdio.h>
 
-#define LED_BLUE 12  // GPIO utilizada para controle do Led Azul
+#define PWM_GPIO 22
+#define PWM_WRAP 20000
 
-// Função para configurar o PWM na frequência desejada (50 Hz)
-uint pwm_setup() {
-    gpio_set_function(LED_BLUE, GPIO_FUNC_PWM);         // Configura o pino como saída PWM
-    uint slice = pwm_gpio_to_slice_num(LED_BLUE);         // Obtém o slice correspondente
+// Função para configurar o PWM
+void setup_pwm() {
+    gpio_set_function(PWM_GPIO, GPIO_FUNC_PWM); // Set GPIO 22 as PWM
+    uint slice_num = pwm_gpio_to_slice_num(PWM_GPIO); // Pega o número do slice do PWM
+    pwm_set_wrap(slice_num, PWM_WRAP); // Seta o valor de wrap do PWM
+    pwm_set_clkdiv(slice_num, 125.0f); // Seta o divisor de clock do PWM
+    pwm_set_enabled(slice_num, true); // Habilita o PWM
+}
 
-    // Configura o divisor de clock:
-    pwm_set_clkdiv(slice, 125.0);
-    
-    // Para obter um período de 20 ms (20.000 µs) no PWM:
-    // wrap + 1 = 20000  =>  wrap = 19999
-    pwm_set_wrap(slice, 19999);
+// Função para setar o duty cycle do PWM
+void set_pwm_duty_cycle(uint slice_num, uint16_t duty_cycle) {
+    pwm_set_gpio_level(PWM_GPIO, duty_cycle);
+}
 
-    pwm_set_enabled(slice, true);  // Habilita o slice PWM
+// Função para mover o servo motor para 180 graus
+void move_servo_to_180_degrees() {
+    uint slice_num = pwm_gpio_to_slice_num(PWM_GPIO);
+    uint16_t duty_cycle = 2400; // 2.400µs
+    set_pwm_duty_cycle(slice_num, duty_cycle);
+    sleep_ms(5000); // Aguarda 5 segundos
+}
 
-    return slice;
+// Função para mover o servo motor para 90 graus
+void move_servo_to_90_degrees() {
+    uint slice_num = pwm_gpio_to_slice_num(PWM_GPIO);
+    uint16_t duty_cycle = 1470; // 1.470µs
+    set_pwm_duty_cycle(slice_num, duty_cycle);
+    sleep_ms(5000); // Aguarda 5 segundos
+}
+
+// Função para mover o servo motor para 0 graus
+void move_servo_to_0_degrees() {
+    uint slice_num = pwm_gpio_to_slice_num(PWM_GPIO);
+    uint16_t duty_cycle = 500; // 500µs
+    set_pwm_duty_cycle(slice_num, duty_cycle);
+    sleep_ms(5000); // Aguarda 5 segundos
 }
 
 int main() {
-    stdio_init_all();  // Inicializa o sistema de I/O
-    pwm_setup();  // Configura o PWM
 
-    // 1) Posição para 180° (pulso de 2400 µs)
-    pwm_set_gpio_level(LED_BLUE, 2400);
-    printf("Posicao: 180 graus\n");
-    sleep_ms(5000);  // Aguarda 5 segundos
+    stdio_init_all(); // Inicializa a comunicação serial
+    setup_pwm(); // Chama a função para configurar o PWM
 
-    // 2) Posição para 90° (pulso de 1470 µs)
-    pwm_set_gpio_level(LED_BLUE, 1470);
-    printf("Posicao: 90 graus\n");
-    sleep_ms(5000);  // Aguarda 5 segundos
+    // Chamar a função para mover o servo para 180 graus
+    move_servo_to_180_degrees();
+    // Chamar a função para mover o servo para 90 graus
+    move_servo_to_90_degrees();
+    // Chamar a função para mover o servo para 0 graus
+    move_servo_to_0_degrees();
 
-    // 3) Posição para 0° (pulso de 500 µs)
-    pwm_set_gpio_level(LED_BLUE, 500);
-    printf("Posicao: 0 graus\n");
-    sleep_ms(5000);  // Aguarda 5 segundos
-
-    // 4) Movimentação suave entre 0° e 180°:
-    // Incrementa o pulso de 500 µs até 2400 µs com passos de 5 µs e depois decrementa.
+    // Loop infinito para fazer o servo motor se mover de 0 a 180 graus
     while (true) {
-        // Movimento de 0° para 180°
-        for (int level = 500; level <= 2400; level += 5) {
-            pwm_set_gpio_level(LED_BLUE, level);
-            sleep_ms(10);  // Atraso de 10 ms entre os incrementos
+        for (uint16_t duty_cycle = 500; duty_cycle <= 2400; duty_cycle += 5) {
+            set_pwm_duty_cycle(pwm_gpio_to_slice_num(PWM_GPIO), duty_cycle);
+            sleep_ms(10);
         }
-        // Movimento de 180° para 0°
-        for (int level = 2400; level >= 500; level -= 5) {
-            pwm_set_gpio_level(LED_BLUE, level);
-            sleep_ms(10);  // Atraso de 10 ms entre os decrementos
+        for (uint16_t duty_cycle = 2400; duty_cycle >= 500; duty_cycle -= 5) {
+            set_pwm_duty_cycle(pwm_gpio_to_slice_num(PWM_GPIO), duty_cycle);
+            sleep_ms(10);
         }
     }
-
+        
     return 0;
 }
